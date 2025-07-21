@@ -1,58 +1,81 @@
-import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Keyboard, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
-export default function HomeScreen() {
+export default function LandingScreen() {
+  const [nickname, setNickname] = useState('');
+  const router = useRouter();
+  const color = useThemeColor({ light: '#000', dark: '#fff' }, 'text');
+
+  const handleContinue = () => {
+    const trimmedNickname = nickname.trim();
+    if (trimmedNickname !== '') {
+      Alert.alert(
+        'Confirm Nickname',
+        `Is "${trimmedNickname}" your desired nickname?`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Confirm',
+            onPress: () => router.push({ pathname: '/home', params: { nickname: trimmedNickname } }),
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image source={require('@/assets/images/project6.jpg')}
-        style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <ThemedView style={styles.container}>
         <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
+        <ThemedText style={styles.subtitle}>Please enter your nickname to continue</ThemedText>
+        <TextInput
+          style={[styles.input, { color }]}
+          placeholder="Nickname"
+          placeholderTextColor="#ccc"
+          value={nickname}
+          onChangeText={setNickname}
+        />
+        <TouchableOpacity style={styles.button} onPress={handleContinue}>
+          <ThemedText style={styles.buttonText}>Continue</ThemedText>
+        </TouchableOpacity>
       </ThemedView>
-
-      <ThemedView style={styles.textContainer}>
-        <ThemedText style={styles.textContainer}>Please enter your name to continue</ThemedText>
-      </ThemedView>
-      
-    </ParallaxScrollView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    padding: 20,
   },
-  textContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  subtitle: {
+    fontSize: 18,
+    marginVertical: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 250,
-    width: 500,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  input: {
+    width: '100%',
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 20,
   },
   button: {
     backgroundColor: '#007BFF',
-    padding: 10,
+    padding: 15,
     borderRadius: 5,
     alignItems: 'center',
   },
