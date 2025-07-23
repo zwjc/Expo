@@ -24,7 +24,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 32,
+    paddingTop: 50,
     gap: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   titleContainer: {
     flexDirection: 'row',
