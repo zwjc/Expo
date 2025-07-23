@@ -1,16 +1,19 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ImageBackground } from 'react-native';
-import React, { useState } from 'react';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import React, { useState } from 'react';
+import { ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function RecipesScreen() {
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  type Recipe = { id: string; name: string; description: string; image: any };
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const colorScheme = useColorScheme();
 
-  const recipes = [
+  const recipes: Recipe[] = [
     { id: '1', name: 'Spaghetti Carbonara', description: 'A classic Italian pasta dish.', image: require('@/assets/images/project6.jpg') },
     { id: '2', name: 'Chicken Curry', description: 'A flavorful and spicy chicken dish.', image: require('@/assets/images/project6.jpg') },
     { id: '3', name: 'Vegetable Stir-fry', description: 'A quick and healthy vegetable dish.', image: require('@/assets/images/project6.jpg') },
+    { id: '4', name: 'Pancakes', description: 'Fluffy pancakes for a perfect breakfast.', image: require('@/assets/images/project6.jpg') },
+    { id: '5', name: 'Steak Frites', description: 'Classic steak and fries.', image: require('@/assets/images/project6.jpg') },
   ];
 
   const renderRecipeList = () => (
@@ -30,8 +33,12 @@ export default function RecipesScreen() {
 
   const renderRecipeDetails = () => (
     <View style={styles.detailsContainer}>
-      <Text style={[styles.detailsTitle, { color: Colors[colorScheme ?? 'light'].text }]}>{selectedRecipe.name}</Text>
-      <Text style={[styles.detailsDescription, { color: Colors[colorScheme ?? 'light'].text }]}>{selectedRecipe.description}</Text>
+      <Text style={[styles.detailsTitle, { color: Colors[colorScheme ?? 'light'].text }]}>
+        {selectedRecipe?.name ?? ''}
+      </Text>
+      <Text style={[styles.detailsDescription, { color: Colors[colorScheme ?? 'light'].text }]}>
+        {selectedRecipe?.description ?? ''}
+      </Text>
       <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => setSelectedRecipe(null)}>
         <Text style={[styles.backButtonText, { color: Colors[colorScheme ?? 'light'].background }]}>Back to Recipes</Text>
       </TouchableOpacity>
@@ -48,23 +55,20 @@ export default function RecipesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
   scrollViewContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 20,
+    paddingTop: 60,
+    paddingHorizontal: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   recipeCard: {
-    width: '90%',
+    width: '100%',
     height: 200,
     borderRadius: 10,
     overflow: 'hidden',
