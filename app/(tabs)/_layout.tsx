@@ -19,12 +19,6 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
       }}>
       <Tabs.Screen
-        name="interests"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="home"
         options={{
           title: 'Home',
