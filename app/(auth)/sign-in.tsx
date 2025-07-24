@@ -1,22 +1,63 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { HapticButton } from '@/components/HapticButton';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { HapticButton } from '@/components/HapticButton';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function SignInScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const [isAppleAuthAvailable, setIsAppleAuthAvailable] = useState(false);
+
+  useEffect(() => {
+    async function checkAppleAuth() {
+      const isAvailable = await AppleAuthentication.isAvailableAsync();
+      setIsAppleAuthAvailable(isAvailable);
+    }
+    checkAppleAuth();
+  }, []);
+
+  const handleAppleSignIn = async () => {
+    if (process.env.EXPO_OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      console.log('Apple Sign-In successful:', credential);
+      router.replace('/(tabs)/home');
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+        console.log('Apple Sign-In cancelled');
+      } else {
+        console.error('Apple Sign-In error:', e);
+        alert(`Apple Sign-In failed: ${e.message}`);
+      }
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-      <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>Sign In</Text>
-      <HapticButton style={[styles.button, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => alert('Sign in with Apple ID')}>
-        <Text style={[styles.buttonText, { color: Colors[colorScheme ?? 'light'].background }]}>Sign in with Apple ID</Text>
-      </HapticButton>
-      <HapticButton style={[styles.button, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => alert('Sign in with Face ID')}>
-        <Text style={[styles.buttonText, { color: Colors[colorScheme ?? 'light'].background }]}>Sign in with Face ID</Text>
-      </HapticButton>
+      <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>Welcome!</Text>
+      <Text style={[styles.subtitle, { color: Colors[colorScheme ?? 'light'].text }]}>Sign in to continue your food journey!</Text>
+
+      {isAppleAuthAvailable && (
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={5}
+          style={styles.appleButton}
+          onPress={handleAppleSignIn}
+        />
+      )}
+
       <HapticButton onPress={() => router.back()}>
         <Text style={[styles.backButton, { color: Colors[colorScheme ?? 'light'].tint }]}>Back</Text>
       </HapticButton>
@@ -29,21 +70,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
     marginBottom: 40,
+    textAlign: 'center',
   },
-  button: {
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
+  appleButton: {
     width: '80%',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 18,
+    height: 45,
+    marginBottom: 20,
   },
   backButton: {
     marginTop: 20,
