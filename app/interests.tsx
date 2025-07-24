@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { HapticButton } from '@/components/HapticButton';
 
 const interests = [
   { id: '1', title: 'Meats' },
@@ -16,9 +17,9 @@ export default function InterestsScreen() {
   const colorScheme = useColorScheme();
 
   const renderItem = ({ item }: { item: { id: string, title: string } }) => (
-    <TouchableOpacity style={[styles.interestButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => router.push('/(tabs)/home')}>
+    <HapticButton style={[styles.interestButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => router.push('/(tabs)/home')}>
       <Text style={[styles.interestButtonText, { color: Colors[colorScheme ?? 'light'].background }]}>{item.title}</Text>
-    </TouchableOpacity>
+    </HapticButton>
   );
 
   return (

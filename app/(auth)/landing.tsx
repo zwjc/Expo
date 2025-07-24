@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { HapticButton } from '@/components/HapticButton';
 
 export default function LandingScreen() {
   const router = useRouter();
@@ -10,12 +11,12 @@ export default function LandingScreen() {
   return (
     <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
       <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>Welcome to the Smart Meal Planner</Text>
-      <TouchableOpacity style={[styles.button, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => router.push('/interests')}>
+      <HapticButton style={[styles.button, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => router.push('/interests')}>
         <Text style={[styles.buttonText, { color: Colors[colorScheme ?? 'light'].background }]}>Continue as Guest</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => router.push('/(auth)/sign-in')}>
+      </HapticButton>
+      <HapticButton style={[styles.button, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => router.push('/(auth)/sign-in')}>
         <Text style={[styles.buttonText, { color: Colors[colorScheme ?? 'light'].background }]}>Sign In</Text>
-      </TouchableOpacity>
+      </HapticButton>
     </View>
   );
 }
