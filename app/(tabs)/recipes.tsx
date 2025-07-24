@@ -5,7 +5,7 @@ import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, Touch
 
 export default function RecipesScreen() {
   type Recipe = { id: string; name: string; description: string; image: any };
-  type FullRecipeDetails = Recipe & { instructions: string };
+  type FullRecipeDetails = Recipe & { instructions: string; ingredients: string[] };
 
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [recipeDetails, setRecipeDetails] = useState<FullRecipeDetails | null>(null);
@@ -32,12 +32,21 @@ export default function RecipesScreen() {
       const data = await response.json();
       if (data && data.meals && data.meals.length > 0) {
         const meal = data.meals[0];
+        const ingredients: string[] = [];
+        for (let i = 1; i <= 20; i++) {
+          const ingredient = meal[`strIngredient${i}`];
+          const measure = meal[`strMeasure${i}`];
+          if (ingredient && ingredient.trim() !== '') {
+            ingredients.push(`${measure ? measure.trim() + ' ' : ''}${ingredient.trim()}`);
+          }
+        }
         setRecipeDetails({
           id: meal.idMeal,
           name: meal.strMeal,
           description: meal.strCategory,
           image: { uri: meal.strMealThumb },
           instructions: meal.strInstructions,
+          ingredients: ingredients,
         });
       } else {
         console.error('No recipe details found.');
@@ -76,9 +85,18 @@ export default function RecipesScreen() {
           <Text style={[styles.detailsTitle, { color: Colors[colorScheme ?? 'light'].text }]}>
             {recipeDetails.name}
           </Text>
-          <Text style={[styles.detailsDescription, { color: Colors[colorScheme ?? 'light'].text }]}>
-            {recipeDetails.instructions}
-          </Text>
+          <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Ingredients:</Text>
+          {recipeDetails.ingredients.map((ingredient, index) => (
+            <Text key={index} style={[styles.ingredientItem, { color: Colors[colorScheme ?? 'light'].text }]}>
+              {`• ${ingredient}`}
+            </Text>
+          ))}
+          <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Instructions:</Text>
+          {recipeDetails.instructions.split('. ').filter(Boolean).map((step, index) => (
+            <Text key={index} style={[styles.instructionStep, { color: Colors[colorScheme ?? 'light'].text }]}>
+              {`${index + 1}. ${step.trim()}`}
+            </Text>
+          ))}
           <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => {
             setSelectedRecipe(null);
             setRecipeDetails(null);
@@ -149,9 +167,11 @@ const styles = StyleSheet.create({
   },
   detailsScrollViewContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    paddingTop: 80, // Increased padding to the top
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   detailsContainer: {
     flex: 1,
@@ -163,11 +183,26 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 10,
-  },
-  detailsDescription: {
-    fontSize: 18,
     textAlign: 'center',
-    marginBottom: 20,
+    width: '100%',
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    width: '100%',
+  },
+  instructionStep: {
+    fontSize: 16,
+    marginBottom: 5,
+    lineHeight: 24,
+    width: '100%',
+  },
+  ingredientItem: {
+    fontSize: 16,
+    marginBottom: 3,
+    width: '100%',
   },
   backButton: {
     padding: 10,
@@ -176,5 +211,11 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
+  },
+  detailsDescription: {
+    fontSize: 16,
+    marginTop: 20,
+    textAlign: 'center',
+    width: '100%',
   },
 });
