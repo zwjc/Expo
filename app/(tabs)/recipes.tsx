@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useState } from 'react';
-import { ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function RecipesScreen() {
   type Recipe = { id: string; name: string; description: string; image: any };
@@ -13,12 +13,15 @@ export default function RecipesScreen() {
   const colorScheme = useColorScheme();
 
   const recipes: Recipe[] = [
-    { id: '52802', name: 'Fish pie', description: 'A classic British fish pie.', image: require('@/assets/images/project6.jpg') },
-    { id: '52940', name: 'Salmon Prawn Risotto', description: 'A creamy risotto with salmon and prawns.', image: require('@/assets/images/project6.jpg') },
-    { id: '52959', name: 'Tuna Nicoise', description: 'A fresh and healthy tuna salad.', image: require('@/assets/images/project6.jpg') },
-    { id: '52956', name: 'Chicken Handi', description: 'A rich and creamy chicken curry.', image: require('@/assets/images/project6.jpg') },
-    { id: '52920', name: 'Kung Pao Chicken', description: 'A spicy and flavorful Chinese chicken dish.', image: require('@/assets/images/project6.jpg') },
-    { id: '52937', name: 'Teriyaki Chicken Casserole', description: 'A sweet and savory chicken casserole.', image: require('@/assets/images/project6.jpg') },
+    { id: '52802', name: 'Fish pie', description: 'A classic British fish pie.', image: { uri: 'https://www.themealdb.com/images/media/meals/ysxwuq1487323065.jpg' } },
+    { id: '52940', name: 'Salmon Prawn Risotto', description: 'A creamy risotto with salmon and prawns.', image: { uri: 'https://www.themealdb.com/images/media/meals/xxrxux1503070723.jpg' } },
+    { id: '52959', name: 'Tuna Nicoise', description: 'A fresh and healthy tuna salad.', image: { uri: 'https://www.themealdb.com/images/media/meals/yypwwq1511304979.jpg' } },
+    { id: '52956', name: 'Chicken Handi', description: 'A rich and creamy chicken curry.', image: { uri: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg' } },
+    { id: '52920', name: 'Kung Pao Chicken', description: 'A spicy and flavorful Chinese chicken dish.', image: { uri: 'https://www.themealdb.com/images/media/meals/1525872624.jpg' } },
+    { id: '52937', name: 'Teriyaki Chicken Casserole', description: 'A sweet and savory chicken casserole.', image: { uri: 'https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg' } },
+    { id: '52893', name: 'Apple & Blackberry Crumble', description: 'A classic British dessert.', image: { uri: 'https://www.themealdb.com/images/media/meals/xvsurr1511719182.jpg' } },
+    { id: '52894', name: 'Battenberg Cake', description: 'A light sponge cake.', image: { uri: 'https://www.themealdb.com/images/media/meals/ywwrsp1511720277.jpg' } },
+    { id: '52897', name: 'Carrot Cake', description: 'A moist and flavorful cake.', image: { uri: 'https://www.themealdb.com/images/media/meals/vrspxv1511722107.jpg' } },
   ];
 
   const fetchRecipeDetails = async (recipeId: string) => {
@@ -32,7 +35,7 @@ export default function RecipesScreen() {
         setRecipeDetails({
           id: meal.idMeal,
           name: meal.strMeal,
-          description: meal.strCategory, // Using category as a placeholder for description
+          description: meal.strCategory,
           image: { uri: meal.strMealThumb },
           instructions: meal.strInstructions,
         });
