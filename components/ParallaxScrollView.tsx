@@ -5,6 +5,9 @@ import Animated, {
   useAnimatedRef,
   useAnimatedStyle,
   useScrollViewOffset,
+  runOnJS,
+  useDerivedValue,
+  useSharedValue,
 } from 'react-native-reanimated';
 
 import { ThemedView } from '@/components/ThemedView';
@@ -27,22 +30,34 @@ export default function ParallaxScrollView({
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const bottom = useBottomTabOverflow();
+  
+  // Use shared values for better performance
+  const translateY = useSharedValue(0);
+  const scale = useSharedValue(1);
+  
+  // Optimize interpolation with useDerivedValue
+  useDerivedValue(() => {
+    translateY.value = interpolate(
+      scrollOffset.value,
+      [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
+      [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
+    );
+    scale.value = interpolate(
+      scrollOffset.value, 
+      [-HEADER_HEIGHT, 0, HEADER_HEIGHT], 
+      [2, 1, 1]
+    );
+  });
+
   const headerAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
     return {
       transform: [
-        {
-          translateY: interpolate(
-            scrollOffset.value,
-            [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-            [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
-          ),
-        },
-        {
-          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [2, 1, 1]),
-        },
+        { translateY: translateY.value },
+        { scale: scale.value },
       ],
     };
-  });
+  }, []);
 
   return (
     <ThemedView style={styles.container}>
@@ -50,7 +65,10 @@ export default function ParallaxScrollView({
         ref={scrollRef}
         scrollEventThrottle={16}
         scrollIndicatorInsets={{ bottom }}
-        contentContainerStyle={{ paddingBottom: bottom }}>
+        contentContainerStyle={{ paddingBottom: bottom }}
+        removeClippedSubviews={true}
+        showsVerticalScrollIndicator={false}
+      >
         <Animated.View
           style={[
             styles.header,

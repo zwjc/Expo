@@ -1,7 +1,25 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import React, { useState } from 'react';
-import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
+
+// Memoized recipe card component for better performance
+const RecipeCard = React.memo(({ recipe, onPress }: { recipe: Recipe; onPress: () => void }) => (
+  <TouchableOpacity style={styles.recipeCard} onPress={onPress}>
+    <Image 
+      source={recipe.image} 
+      style={styles.cardImage}
+      contentFit="cover"
+      transition={200}
+      placeholder={require('@/assets/images/partial-react-logo.png')}
+      cachePolicy="memory-disk"
+    />
+    <View style={styles.cardOverlay}>
+      <Text style={styles.cardText}>{recipe.name}</Text>
+    </View>
+  </TouchableOpacity>
+));
 
 export default function RecipesScreen() {
   type Recipe = { id: string; name: string; description: string; image: any };
@@ -12,7 +30,8 @@ export default function RecipesScreen() {
   const [loadingDetails, setLoadingDetails] = useState(false);
   const colorScheme = useColorScheme();
 
-  const recipes: Recipe[] = [
+  // Memoize recipes array to prevent unnecessary re-renders
+  const recipes: Recipe[] = useMemo(() => [
     { id: '52802', name: 'Fish pie', description: 'A classic British fish pie.', image: { uri: 'https://www.themealdb.com/images/media/meals/ysxwuq1487323065.jpg' } },
     { id: '52940', name: 'Salmon Prawn Risotto', description: 'A creamy risotto with salmon and prawns.', image: { uri: 'https://www.themealdb.com/images/media/meals/xxrxux1503070723.jpg' } },
     { id: '52959', name: 'Tuna Nicoise', description: 'A fresh and healthy tuna salad.', image: { uri: 'https://www.themealdb.com/images/media/meals/yypwwq1511304979.jpg' } },
@@ -22,13 +41,25 @@ export default function RecipesScreen() {
     { id: '52893', name: 'Apple & Blackberry Crumble', description: 'A classic British dessert.', image: { uri: 'https://www.themealdb.com/images/media/meals/xvsurr1511719182.jpg' } },
     { id: '52894', name: 'Battenberg Cake', description: 'A light sponge cake.', image: { uri: 'https://www.themealdb.com/images/media/meals/ywwrsp1511720277.jpg' } },
     { id: '52897', name: 'Carrot Cake', description: 'A moist and flavorful cake.', image: { uri: 'https://www.themealdb.com/images/media/meals/vrspxv1511722107.jpg' } },
-  ];
+  ], []);
 
-  const fetchRecipeDetails = async (recipeId: string) => {
+  // Memoized and optimized fetch function
+  const fetchRecipeDetails = useCallback(async (recipeId: string) => {
     setLoadingDetails(true);
     setRecipeDetails(null);
     try {
-      const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${recipeId}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${recipeId}`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      
       const data = await response.json();
       if (data && data.meals && data.meals.length > 0) {
         const meal = data.meals[0];
@@ -52,32 +83,72 @@ export default function RecipesScreen() {
         console.error('No recipe details found.');
       }
     } catch (error) {
-      console.error('Error fetching recipe details:', error);
+      if (error.name === 'AbortError') {
+        console.error('Request timed out');
+      } else {
+        console.error('Error fetching recipe details:', error);
+      }
     } finally {
       setLoadingDetails(false);
     }
-  };
+  }, []);
 
-  const renderRecipeList = () => (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
+  // Memoized handlers
+  const handleRecipePress = useCallback((recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    fetchRecipeDetails(recipe.id);
+  }, [fetchRecipeDetails]);
+
+  const handleBackPress = useCallback(() => {
+    setSelectedRecipe(null);
+    setRecipeDetails(null);
+  }, []);
+
+  // Memoized recipe list component
+  const renderRecipeList = useMemo(() => (
+    <ScrollView 
+      contentContainerStyle={styles.scrollViewContent}
+      removeClippedSubviews={true}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>Recipes</Text>
       {recipes.map((recipe) => (
-        <TouchableOpacity key={recipe.id} style={styles.recipeCard} onPress={() => {
-          setSelectedRecipe(recipe);
-          fetchRecipeDetails(recipe.id);
-        }}>
-          <ImageBackground source={recipe.image} style={styles.cardImage} imageStyle={styles.cardImageStyle}>
-            <View style={styles.cardOverlay}>
-              <Text style={styles.cardText}>{recipe.name}</Text>
-            </View>
-          </ImageBackground>
-        </TouchableOpacity>
+        <RecipeCard 
+          key={recipe.id} 
+          recipe={recipe} 
+          onPress={() => handleRecipePress(recipe)} 
+        />
       ))}
     </ScrollView>
-  );
+  ), [recipes, colorScheme, handleRecipePress]);
+
+  // Memoized ingredients list
+  const ingredientsList = useMemo(() => {
+    if (!recipeDetails) return null;
+    return recipeDetails.ingredients.map((ingredient, index) => (
+      <Text key={index} style={[styles.ingredientItem, { color: Colors[colorScheme ?? 'light'].text }]}>
+        {`• ${ingredient}`}
+      </Text>
+    ));
+  }, [recipeDetails, colorScheme]);
+
+  // Memoized instructions list
+  const instructionsList = useMemo(() => {
+    if (!recipeDetails) return null;
+    return recipeDetails.instructions.split('. ').filter(Boolean).map((step, index) => (
+      <Text key={index} style={[styles.instructionStep, { color: Colors[colorScheme ?? 'light'].text }]}>
+        {`${index + 1}. ${step.trim()}`}
+      </Text>
+    ));
+  }, [recipeDetails, colorScheme]);
 
   const renderRecipeDetails = () => (
-    <ScrollView style={styles.detailsScrollView} contentContainerStyle={styles.detailsScrollViewContent}>
+    <ScrollView 
+      style={styles.detailsScrollView} 
+      contentContainerStyle={styles.detailsScrollViewContent}
+      removeClippedSubviews={true}
+      showsVerticalScrollIndicator={false}
+    >
       {loadingDetails ? (
         <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
       ) : recipeDetails ? (
@@ -86,21 +157,13 @@ export default function RecipesScreen() {
             {recipeDetails.name}
           </Text>
           <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Ingredients:</Text>
-          {recipeDetails.ingredients.map((ingredient, index) => (
-            <Text key={index} style={[styles.ingredientItem, { color: Colors[colorScheme ?? 'light'].text }]}>
-              {`• ${ingredient}`}
-            </Text>
-          ))}
+          {ingredientsList}
           <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Instructions:</Text>
-          {recipeDetails.instructions.split('. ').filter(Boolean).map((step, index) => (
-            <Text key={index} style={[styles.instructionStep, { color: Colors[colorScheme ?? 'light'].text }]}>
-              {`${index + 1}. ${step.trim()}`}
-            </Text>
-          ))}
-          <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => {
-            setSelectedRecipe(null);
-            setRecipeDetails(null);
-          }}>
+          {instructionsList}
+          <TouchableOpacity 
+            style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} 
+            onPress={handleBackPress}
+          >
             <Text style={[styles.backButtonText, { color: Colors[colorScheme ?? 'light'].background }]}>Back to Recipes</Text>
           </TouchableOpacity>
         </>
@@ -112,7 +175,7 @@ export default function RecipesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-      {selectedRecipe ? renderRecipeDetails() : renderRecipeList()}
+      {selectedRecipe ? renderRecipeDetails() : renderRecipeList}
     </View>
   );
 }
@@ -146,12 +209,14 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     flex: 1,
-    justifyContent: 'flex-end',
-  },
-  cardImageStyle: {
-    resizeMode: 'cover',
+    width: '100%',
+    height: '100%',
   },
   cardOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 10,
     alignItems: 'center',
@@ -169,7 +234,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
-    paddingTop: 80, // Increased padding to the top
+    paddingTop: 80,
     paddingHorizontal: 20,
     paddingBottom: 20,
   },

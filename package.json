@@ -8,7 +8,14 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:web": "expo build:web",
+    "build:android": "eas build --platform android",
+    "build:ios": "eas build --platform ios",
+    "analyze:bundle": "npx expo export --platform web --dev false && npx bundlesize",
+    "optimize:images": "imagemin assets/images/* --out-dir=assets/images/optimized",
+    "performance:check": "node scripts/performance-check.js",
+    "performance:images": "node scripts/optimize-images.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -44,7 +51,27 @@
     "@types/react": "~19.0.10",
     "typescript": "~5.8.3",
     "eslint": "^9.25.0",
-    "eslint-config-expo": "~9.2.0"
+    "eslint-config-expo": "~9.2.0",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "babel-plugin-transform-remove-unused-imports": "^1.0.7",
+    "babel-plugin-transform-imports": "^2.0.0",
+    "babel-plugin-minify-dead-code-elimination": "^0.5.2",
+    "bundlesize": "^0.18.1",
+    "imagemin": "^8.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^9.0.2"
   },
+  "bundlesize": [
+    {
+      "path": "./dist/static/js/*.js",
+      "maxSize": "500 kB",
+      "compression": "gzip"
+    },
+    {
+      "path": "./dist/static/css/*.css",
+      "maxSize": "50 kB",
+      "compression": "gzip"
+    }
+  ],
   "private": true
 }
