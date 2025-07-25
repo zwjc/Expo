@@ -1,10 +1,11 @@
+import CustomAlert from '@/components/CustomAlert';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import React, { useState, useEffect } from 'react';
-import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useGroceryList } from '@/hooks/useGroceryList';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useGroceryList } from '@/hooks/useGroceryList'; // Custom hook for global state management
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function RecipesScreen() {
   type Recipe = { idMeal: string; strMeal: string; strMealThumb: string };
@@ -23,6 +24,7 @@ export default function RecipesScreen() {
   const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [alertVisible, setAlertVisible] = useState(false);
   const colorScheme = useColorScheme();
   const { addItems } = useGroceryList();
 
@@ -41,7 +43,7 @@ export default function RecipesScreen() {
               allFetchedRecipes.push(...data.meals);
             }
           }
-          // Remove duplicates
+          
           const uniqueRecipes = Array.from(new Set(allFetchedRecipes.map(r => r.idMeal))).map(id => allFetchedRecipes.find(r => r.idMeal === id)!);
           setRecipes(uniqueRecipes);
           setFilteredRecipes(uniqueRecipes);
@@ -67,7 +69,7 @@ export default function RecipesScreen() {
         if (filteredByName.length > 0) {
           setFilteredRecipes(filteredByName);
         } else {
-          // If no results by name, search by ingredient
+          
           try {
             setLoading(true);
             const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${searchQuery}`);
@@ -91,7 +93,7 @@ export default function RecipesScreen() {
 
     const debounceSearch = setTimeout(() => {
         handleSearch();
-    }, 500); // Debounce to avoid excessive API calls
+    }, 500);
 
     return () => clearTimeout(debounceSearch);
   }, [searchQuery, recipes]);
@@ -126,7 +128,7 @@ export default function RecipesScreen() {
   const handleAddToGroceryList = () => {
     if (recipeDetails) {
       addItems(recipeDetails.ingredients);
-      alert('Ingredients added to your grocery list!');
+      setAlertVisible(true);
     }
   };
 
@@ -205,6 +207,12 @@ export default function RecipesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
       {selectedRecipe ? renderRecipeDetails() : renderRecipeList()}
+      <CustomAlert 
+        visible={alertVisible} 
+        title="Success" 
+        message="Ingredients have been added to your grocery list."
+        onClose={() => setAlertVisible(false)}
+      />
     </View>
   );
 }

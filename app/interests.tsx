@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { HapticButton } from '@/components/HapticButton';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { HapticButton } from '@/components/HapticButton';
-import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface Category {
   idCategory: string;
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: 80,
   },
   title: {
     fontSize: 24,
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   selectedButton: {
-    borderColor: Colors.aquitaine, // Using a color from your palette
-    backgroundColor: Colors.viningIvy, // Using a color from your palette
+    borderColor: Colors.aquitaine,
+    backgroundColor: Colors.viningIvy,
   },
   interestButtonText: {
     fontSize: 18,

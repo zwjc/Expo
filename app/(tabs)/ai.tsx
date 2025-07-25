@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList } from 'react-native';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { useState } from 'react';
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface Message {
   id: string;
@@ -22,8 +22,7 @@ export default function AiScreen() {
         isUser: true,
       };
       setMessages(prev => [newMessage, ...prev]);
-      // Here you would call the AI API and get a response
-      // For now, we'll just simulate a response
+
       setTimeout(() => {
         const aiResponse: Message = {
           id: Date.now().toString(),
@@ -44,7 +43,7 @@ export default function AiScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-      <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>AI Meal Suggestions</Text>
+      <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>Ask for Meal Suggestions</Text>
       <FlatList
         data={messages}
         renderItem={renderItem}
@@ -71,7 +70,7 @@ export default function AiScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 80,
   },
   title: {
     fontSize: 24,

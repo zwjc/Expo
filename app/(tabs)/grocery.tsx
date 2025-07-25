@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useGroceryList } from '@/hooks/useGroceryList';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function GroceryListScreen() {
   const colorScheme = useColorScheme();
@@ -11,7 +12,7 @@ export default function GroceryListScreen() {
     <View style={styles.itemContainer}>
       <Text style={[styles.itemText, { color: Colors[colorScheme ?? 'light'].text }]}>{`• ${item.measure} ${item.name}`}</Text>
       <TouchableOpacity onPress={() => removeItem(item.name)}>
-        <Text style={styles.removeButton}>Remove</Text>
+        <IconSymbol name="trash" size={24} color={Colors[colorScheme ?? 'light'].tint} />
       </TouchableOpacity>
     </View>
   );
@@ -57,20 +58,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: Colors.light.tint,
   },
   itemText: {
-    fontSize: 18,
-  },
-  removeButton: {
-    color: 'red',
-    fontSize: 16,
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 50,
     fontSize: 18,
   },
   clearButton: {
@@ -82,5 +74,10 @@ const styles = StyleSheet.create({
   clearButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 50,
+    fontSize: 18,
   },
 });
