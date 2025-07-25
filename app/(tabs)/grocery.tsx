@@ -42,8 +42,7 @@ export default function GroceryListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,
-    paddingHorizontal: 20,
+    paddingTop: 60,
   },
   title: {
     fontSize: 24,
@@ -53,6 +52,7 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1,
+    paddingHorizontal: 20,
   },
   itemContainer: {
     flexDirection: 'row',

@@ -176,18 +176,24 @@ export default function RecipesScreen() {
           <Text style={[styles.detailsTitle, { color: Colors[colorScheme ?? 'light'].text }]}>
             {recipeDetails.strMeal}
           </Text>
-          <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Ingredients:</Text>
-          {recipeDetails.ingredients.map((ingredient, index) => (
-            <Text key={index} style={[styles.ingredientItem, { color: Colors[colorScheme ?? 'light'].text }]}>
-              {`• ${ingredient.measure} ${ingredient.name}`}
-            </Text>
-          ))}
-          <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Instructions:</Text>
-          {recipeDetails.strInstructions.split('\r\n').filter(Boolean).map((step, index) => (
-            <Text key={index} style={[styles.instructionStep, { color: Colors[colorScheme ?? 'light'].text }]}>
-              {`${index + 1}. ${step.trim()}`}
-            </Text>
-          ))}
+
+          <View style={[styles.card, { backgroundColor: Colors[colorScheme ?? 'light'].card }]}>
+            <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Ingredients:</Text>
+            {recipeDetails.ingredients.map((ingredient, index) => (
+              <Text key={index} style={[styles.ingredientItem, { color: Colors[colorScheme ?? 'light'].text }]}>
+                {`• ${ingredient.measure} ${ingredient.name}`}
+              </Text>
+            ))}
+          </View>
+
+          <View style={[styles.card, { backgroundColor: Colors[colorScheme ?? 'light'].card }]}>
+            <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Instructions:</Text>
+            {recipeDetails.strInstructions.split('\r\n').filter(Boolean).map((step, index) => (
+              <Text key={index} style={[styles.instructionStep, { color: Colors[colorScheme ?? 'light'].text }]}>
+                {`${index + 1}. ${step.trim()}`}
+              </Text>
+            ))}
+          </View>
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={handleAddToGroceryList}>
             <Text style={[styles.actionButtonText, { color: Colors[colorScheme ?? 'light'].background }]}>Add to Grocery List</Text>
           </TouchableOpacity>
@@ -283,7 +289,7 @@ const styles = StyleSheet.create({
   },
   backArrow: {
     position: 'absolute',
-    top: 40,
+    top: 50,
     left: 20,
     zIndex: 1,
   },
@@ -338,5 +344,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     textAlign: 'center',
     width: '100%',
+  },
+  card: {
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
 });
