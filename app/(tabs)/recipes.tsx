@@ -1,7 +1,8 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useState } from 'react';
-import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 
 export default function RecipesScreen() {
   type Recipe = { id: string; name: string; description: string; image: any };
@@ -66,11 +67,10 @@ export default function RecipesScreen() {
           setSelectedRecipe(recipe);
           fetchRecipeDetails(recipe.id);
         }}>
-          <ImageBackground source={recipe.image} style={styles.cardImage} imageStyle={styles.cardImageStyle}>
-            <View style={styles.cardOverlay}>
-              <Text style={styles.cardText}>{recipe.name}</Text>
-            </View>
-          </ImageBackground>
+          <Image source={recipe.image} style={styles.cardImage} contentFit="cover" transition={300} />
+          <View style={styles.cardOverlay}>
+            <Text style={styles.cardText}>{recipe.name}</Text>
+          </View>
         </TouchableOpacity>
       ))}
     </ScrollView>
@@ -145,13 +145,15 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   cardImage: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  cardImageStyle: {
-    resizeMode: 'cover',
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
   },
   cardOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 10,
     alignItems: 'center',
