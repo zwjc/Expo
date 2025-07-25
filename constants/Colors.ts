@@ -9,6 +9,7 @@ export const Colors = {
     icon: '#785246',
     tabIconDefault: '#785246',
     tabIconSelected: tintColorLight,
+    card: '#FFFFFF',
   },
   dark: {
     text: '#F3F1F3',
@@ -17,6 +18,7 @@ export const Colors = {
     icon: '#88ABB4',
     tabIconDefault: '#88ABB4',
     tabIconSelected: tintColorDark,
+    card: '#4C2F27',
   },
   darkout: '#2D1608',
   acajou: '#4C2F27',

@@ -24,7 +24,13 @@ export default function InterestsScreen() {
       try {
         const response = await fetch('https://www.themealdb.com/api/json/v1/1/categories.php');
         const data = await response.json();
-        setCategories(data.categories);
+        const modifiedCategories = data.categories.map((category: Category) => {
+          if (category.strCategory === 'Miscellaneous') {
+            return { ...category, strCategory: 'Others' };
+          }
+          return category;
+        });
+        setCategories(modifiedCategories);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
       }
@@ -42,7 +48,7 @@ export default function InterestsScreen() {
   const handleContinue = async () => {
     try {
       await AsyncStorage.setItem('selectedCategories', JSON.stringify(selectedCategories));
-      router.push('/(tabs)/home');
+      router.replace('/(tabs)/home');
     } catch (error) {
       console.error('Failed to save selected categories:', error);
     }
@@ -94,19 +100,26 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   interestButton: {
-    padding: 15,
-    borderRadius: 10,
+    padding: 20,
+    borderRadius: 15,
     margin: 10,
-    width: 150,
+    width: 160,
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   selectedButton: {
-    borderColor: '#88ABB4', // Vining Ivy for selection border
+    borderColor: Colors.aquitaine, // Using a color from your palette
+    backgroundColor: Colors.viningIvy, // Using a color from your palette
   },
   interestButtonText: {
     fontSize: 18,
+    fontWeight: '600',
   },
   continueButton: {
     padding: 15,

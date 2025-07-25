@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGroceryList } from '@/hooks/useGroceryList'; // Custom hook for global state management
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function RecipesScreen() {
   type Recipe = { idMeal: string; strMeal: string; strMealThumb: string };
@@ -56,15 +57,43 @@ export default function RecipesScreen() {
   }, []);
 
   useEffect(() => {
-    if (searchQuery) {
-      const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = recipes.filter(recipe => 
-        recipe.strMeal.toLowerCase().includes(lowercasedQuery)
-      );
-      setFilteredRecipes(filtered);
-    } else {
-      setFilteredRecipes(recipes);
-    }
+    const handleSearch = async () => {
+      if (searchQuery) {
+        const lowercasedQuery = searchQuery.toLowerCase();
+        const filteredByName = recipes.filter(recipe => 
+          recipe.strMeal.toLowerCase().includes(lowercasedQuery)
+        );
+        
+        if (filteredByName.length > 0) {
+          setFilteredRecipes(filteredByName);
+        } else {
+          // If no results by name, search by ingredient
+          try {
+            setLoading(true);
+            const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${searchQuery}`);
+            const data = await response.json();
+            if (data.meals) {
+              setFilteredRecipes(data.meals);
+            } else {
+              setFilteredRecipes([]);
+            }
+          } catch (error) {
+            console.error('Failed to fetch recipes by ingredient:', error);
+            setFilteredRecipes([]);
+          } finally {
+            setLoading(false);
+          }
+        }
+      } else {
+        setFilteredRecipes(recipes);
+      }
+    };
+
+    const debounceSearch = setTimeout(() => {
+        handleSearch();
+    }, 500); // Debounce to avoid excessive API calls
+
+    return () => clearTimeout(debounceSearch);
   }, [searchQuery, recipes]);
 
   const fetchRecipeDetails = async (recipeId: string) => {
@@ -136,6 +165,12 @@ export default function RecipesScreen() {
         <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
       ) : recipeDetails ? (
         <>
+          <TouchableOpacity style={styles.backArrow} onPress={() => {
+            setSelectedRecipe(null);
+            setRecipeDetails(null);
+          }}>
+            <IconSymbol name="arrow.left" size={24} color={Colors[colorScheme ?? 'light'].text} />
+          </TouchableOpacity>
           <Text style={[styles.detailsTitle, { color: Colors[colorScheme ?? 'light'].text }]}>
             {recipeDetails.strMeal}
           </Text>
@@ -237,6 +272,12 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     paddingHorizontal: 20,
     paddingBottom: 20,
+  },
+  backArrow: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1,
   },
   detailsTitle: {
     fontSize: 28,
