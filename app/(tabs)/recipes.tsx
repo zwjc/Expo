@@ -1,28 +1,71 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import React, { useState } from 'react';
-import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ActivityIndicator, ImageBackground, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGroceryList } from '@/hooks/useGroceryList'; // Custom hook for global state management
 
 export default function RecipesScreen() {
-  type Recipe = { id: string; name: string; description: string; image: any };
-  type FullRecipeDetails = Recipe & { instructions: string; ingredients: string[] };
+  type Recipe = { idMeal: string; strMeal: string; strMealThumb: string };
+  type FullRecipeDetails = { 
+    idMeal: string; 
+    strMeal: string; 
+    strMealThumb: string; 
+    strInstructions: string; 
+    ingredients: { name: string; measure: string }[];
+  };
 
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [recipeDetails, setRecipeDetails] = useState<FullRecipeDetails | null>(null);
+  const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const colorScheme = useColorScheme();
+  const { addItems } = useGroceryList();
 
-  const recipes: Recipe[] = [
-    { id: '52802', name: 'Fish pie', description: 'A classic British fish pie.', image: { uri: 'https://www.themealdb.com/images/media/meals/ysxwuq1487323065.jpg' } },
-    { id: '52940', name: 'Salmon Prawn Risotto', description: 'A creamy risotto with salmon and prawns.', image: { uri: 'https://www.themealdb.com/images/media/meals/xxrxux1503070723.jpg' } },
-    { id: '52959', name: 'Tuna Nicoise', description: 'A fresh and healthy tuna salad.', image: { uri: 'https://www.themealdb.com/images/media/meals/yypwwq1511304979.jpg' } },
-    { id: '52956', name: 'Chicken Handi', description: 'A rich and creamy chicken curry.', image: { uri: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg' } },
-    { id: '52920', name: 'Kung Pao Chicken', description: 'A spicy and flavorful Chinese chicken dish.', image: { uri: 'https://www.themealdb.com/images/media/meals/1525872624.jpg' } },
-    { id: '52937', name: 'Teriyaki Chicken Casserole', description: 'A sweet and savory chicken casserole.', image: { uri: 'https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg' } },
-    { id: '52893', name: 'Apple & Blackberry Crumble', description: 'A classic British dessert.', image: { uri: 'https://www.themealdb.com/images/media/meals/xvsurr1511719182.jpg' } },
-    { id: '52894', name: 'Battenberg Cake', description: 'A light sponge cake.', image: { uri: 'https://www.themealdb.com/images/media/meals/ywwrsp1511720277.jpg' } },
-    { id: '52897', name: 'Carrot Cake', description: 'A moist and flavorful cake.', image: { uri: 'https://www.themealdb.com/images/media/meals/vrspxv1511722107.jpg' } },
-  ];
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        const selectedCategoriesJSON = await AsyncStorage.getItem('selectedCategories');
+        const selectedCategories = selectedCategoriesJSON ? JSON.parse(selectedCategoriesJSON) : [];
+
+        if (selectedCategories.length > 0) {
+          const allFetchedRecipes: Recipe[] = [];
+          for (const category of selectedCategories) {
+            const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`);
+            const data = await response.json();
+            if (data.meals) {
+              allFetchedRecipes.push(...data.meals);
+            }
+          }
+          // Remove duplicates
+          const uniqueRecipes = Array.from(new Set(allFetchedRecipes.map(r => r.idMeal))).map(id => allFetchedRecipes.find(r => r.idMeal === id)!);
+          setRecipes(uniqueRecipes);
+          setFilteredRecipes(uniqueRecipes);
+        }
+      } catch (error) {
+        console.error('Failed to fetch recipes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecipes();
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      const filtered = recipes.filter(recipe => 
+        recipe.strMeal.toLowerCase().includes(lowercasedQuery)
+      );
+      setFilteredRecipes(filtered);
+    } else {
+      setFilteredRecipes(recipes);
+    }
+  }, [searchQuery, recipes]);
 
   const fetchRecipeDetails = async (recipeId: string) => {
     setLoadingDetails(true);
@@ -32,22 +75,15 @@ export default function RecipesScreen() {
       const data = await response.json();
       if (data && data.meals && data.meals.length > 0) {
         const meal = data.meals[0];
-        const ingredients: string[] = [];
+        const ingredients: { name: string; measure: string }[] = [];
         for (let i = 1; i <= 20; i++) {
           const ingredient = meal[`strIngredient${i}`];
           const measure = meal[`strMeasure${i}`];
           if (ingredient && ingredient.trim() !== '') {
-            ingredients.push(`${measure ? measure.trim() + ' ' : ''}${ingredient.trim()}`);
+            ingredients.push({ name: ingredient.trim(), measure: measure ? measure.trim() : '' });
           }
         }
-        setRecipeDetails({
-          id: meal.idMeal,
-          name: meal.strMeal,
-          description: meal.strCategory,
-          image: { uri: meal.strMealThumb },
-          instructions: meal.strInstructions,
-          ingredients: ingredients,
-        });
+        setRecipeDetails({ ...meal, ingredients });
       } else {
         console.error('No recipe details found.');
       }
@@ -58,21 +94,39 @@ export default function RecipesScreen() {
     }
   };
 
+  const handleAddToGroceryList = () => {
+    if (recipeDetails) {
+      addItems(recipeDetails.ingredients);
+      alert('Ingredients added to your grocery list!');
+    }
+  };
+
   const renderRecipeList = () => (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>Recipes</Text>
-      {recipes.map((recipe) => (
-        <TouchableOpacity key={recipe.id} style={styles.recipeCard} onPress={() => {
-          setSelectedRecipe(recipe);
-          fetchRecipeDetails(recipe.id);
-        }}>
-          <ImageBackground source={recipe.image} style={styles.cardImage} imageStyle={styles.cardImageStyle}>
-            <View style={styles.cardOverlay}>
-              <Text style={styles.cardText}>{recipe.name}</Text>
-            </View>
-          </ImageBackground>
-        </TouchableOpacity>
-      ))}
+      <TextInput 
+        style={[styles.searchBar, { backgroundColor: Colors[colorScheme ?? 'light'].card, color: Colors[colorScheme ?? 'light'].text }]} 
+        placeholder="Search recipes..." 
+        placeholderTextColor={Colors[colorScheme ?? 'light'].text}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
+      ) : (
+        filteredRecipes.map((recipe) => (
+          <TouchableOpacity key={recipe.idMeal} style={styles.recipeCard} onPress={() => {
+            setSelectedRecipe(recipe);
+            fetchRecipeDetails(recipe.idMeal);
+          }}>
+            <ImageBackground source={{ uri: recipe.strMealThumb }} style={styles.cardImage} imageStyle={styles.cardImageStyle}>
+              <View style={styles.cardOverlay}>
+                <Text style={styles.cardText}>{recipe.strMeal}</Text>
+              </View>
+            </ImageBackground>
+          </TouchableOpacity>
+        ))
+      )}
     </ScrollView>
   );
 
@@ -83,25 +137,28 @@ export default function RecipesScreen() {
       ) : recipeDetails ? (
         <>
           <Text style={[styles.detailsTitle, { color: Colors[colorScheme ?? 'light'].text }]}>
-            {recipeDetails.name}
+            {recipeDetails.strMeal}
           </Text>
           <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Ingredients:</Text>
           {recipeDetails.ingredients.map((ingredient, index) => (
             <Text key={index} style={[styles.ingredientItem, { color: Colors[colorScheme ?? 'light'].text }]}>
-              {`• ${ingredient}`}
+              {`• ${ingredient.measure} ${ingredient.name}`}
             </Text>
           ))}
           <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].text }]}>Instructions:</Text>
-          {recipeDetails.instructions.split('. ').filter(Boolean).map((step, index) => (
+          {recipeDetails.strInstructions.split('\r\n').filter(Boolean).map((step, index) => (
             <Text key={index} style={[styles.instructionStep, { color: Colors[colorScheme ?? 'light'].text }]}>
               {`${index + 1}. ${step.trim()}`}
             </Text>
           ))}
-          <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={() => {
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: Colors[colorScheme ?? 'light'].tint }]} onPress={handleAddToGroceryList}>
+            <Text style={[styles.actionButtonText, { color: Colors[colorScheme ?? 'light'].background }]}>Add to Grocery List</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].card }]} onPress={() => {
             setSelectedRecipe(null);
             setRecipeDetails(null);
           }}>
-            <Text style={[styles.backButtonText, { color: Colors[colorScheme ?? 'light'].background }]}>Back to Recipes</Text>
+            <Text style={[styles.backButtonText, { color: Colors[colorScheme ?? 'light'].text }]}>Back to Recipes</Text>
           </TouchableOpacity>
         </>
       ) : (
@@ -131,6 +188,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+  },
+  searchBar: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 20,
   },
   recipeCard: {
     width: '100%',
@@ -169,15 +234,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
-    paddingTop: 80, // Increased padding to the top
+    paddingTop: 80,
     paddingHorizontal: 20,
     paddingBottom: 20,
-  },
-  detailsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
   detailsTitle: {
     fontSize: 28,
@@ -195,19 +254,32 @@ const styles = StyleSheet.create({
   },
   instructionStep: {
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 10,
     lineHeight: 24,
     width: '100%',
   },
   ingredientItem: {
     fontSize: 16,
-    marginBottom: 3,
+    marginBottom: 5,
     width: '100%',
   },
-  backButton: {
-    padding: 10,
-    borderRadius: 5,
+  actionButton: {
+    padding: 15,
+    borderRadius: 10,
     marginTop: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  backButton: {
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 10,
+    width: '100%',
+    alignItems: 'center',
   },
   backButtonText: {
     fontSize: 16,
