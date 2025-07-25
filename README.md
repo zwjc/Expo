@@ -1,50 +1,86 @@
-# Welcome to your Expo app 👋
+# Smart Meal Planner & Grocery List App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Project Overview
 
-## Get started
+The "Smart Meal Planner & Grocery List" app is designed to address common frustrations with existing meal planning solutions. Many current apps serve as little more than digital recipe books, failing to genuinely assist users in planning meals and generating accurate, aggregated grocery lists. This application aims to streamline the entire process, saving users time, reducing food waste, and making home cooking a more enjoyable and less hectic experience.
 
-1. Install dependencies
+The app prioritizes a lightweight, offline-first approach, ensuring a smooth user experience without heavy cloud dependencies.
 
-   ```bash
-   npm install
-   ```
+## Key Features
 
-2. Start the app
+*   **Dynamic Recipe Discovery:** Explore a vast collection of recipes fetched from TheMealDB API, categorized by user interests.
+*   **Intelligent Search & Filter:** Easily find recipes by name or ingredient, with a robust search functionality that includes ingredient-based suggestions.
+*   **Smart Grocery List Generation:** Automatically aggregates ingredients from selected recipes, combining quantities and eliminating duplicates to produce an accurate and efficient shopping list.
+*   **Customizable Interests:** Users can select their preferred meal categories, influencing the recipes displayed.
+*   **Intuitive User Interface:** A clean, modern, and user-friendly design inspired by HelloFresh, ensuring a pleasant and efficient experience.
+*   **Offline-First Capability:** Core functionalities are designed to work seamlessly offline, with data stored locally on the device.
+*   **Themed Design:** A consistent and aesthetically pleasing color scheme applied throughout the application.
 
-   ```bash
-   npx expo start
-   ```
+## Technical Stack
 
-In the output, you'll find options to open the app in a
+The application is built using modern mobile development technologies to ensure performance, maintainability, and scalability.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+*   **Framework:** React Native (with Expo)
+*   **Navigation:** Expo Router (for file-based routing and navigation management)
+*   **Language:** TypeScript (for type safety and improved code quality)
+*   **State Management:** Zustand (for lightweight and flexible global state management)
+*   **Local Storage:** `@react-native-async-storage/async-storage` (for persistent local data storage)
+*   **API Integration:** TheMealDB API (for comprehensive recipe data, including categories, ingredients, and instructions)
+*   **UI Components:** Custom-built and themed components for a consistent design system.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Getting Started
 
-## Get a fresh project
+Follow these instructions to set up and run the project locally.
 
-When you're ready, run:
+### Prerequisites
 
-```bash
-npm run reset-project
-```
+*   Node.js (LTS version recommended)
+*   npm or Yarn (npm is used in the commands below)
+*   Expo CLI (`npm install -g expo-cli`)
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Installation
 
-## Learn more
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/ExpoApp.git
+    cd ExpoApp
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-To learn more about developing your project with Expo, look at the following resources:
+### Running the App
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1.  **Start the Expo development server:**
+    ```bash
+    npx expo start
+    ```
+2.  **Open on your device/simulator:**
+    *   **Expo Go:** Scan the QR code displayed in your terminal or browser with the Expo Go app on your iOS or Android device.
+    *   **iOS Simulator:** Press `i` in the terminal.
+    *   **Android Emulator:** Press `a` in the terminal.
+    *   **Web Browser:** Press `w` in the terminal (for web preview, though the app is optimized for mobile).
 
-## Join the community
+## Project Structure
 
-Join our community of developers creating universal apps.
+The project follows a standard Expo/React Native structure, with logical separation of concerns:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+*   `app/`: Contains all screen components and navigation routes (using Expo Router).
+*   `assets/`: Stores static assets like images and fonts.
+*   `components/`: Reusable UI components used across the application.
+*   `constants/`: Application-wide constants, including color schemes.
+*   `hooks/`: Custom React hooks for reusable logic (e.g., `useColorScheme`, `useGroceryList`).
+*   `node_modules/`: Installed third-party libraries.
+
+## Future Enhancements
+
+The following features are planned for future development to further enhance the app's capabilities:
+
+*   **Meal Planning Calendar Interface:** A visual calendar to assign recipes to specific days and plan meals for the week.
+*   **AI-Powered Meal Suggestions:** Full integration with a generative AI model (e.g., Gemini) to provide personalized meal recommendations based on user input and dietary preferences.
+*   **Pantry Inventory Management:** Allow users to input existing pantry items to intelligently subtract them from grocery lists.
+*   **Custom Recipe Input:** Enable users to add and manage their own recipes within the app.
+*   **Advanced User Authentication:** Full implementation of Apple ID/Face ID sign-in for personalized experiences and cloud backup (if introduced).
+*   **Dietary Restrictions & Allergies Filtering:** Implement robust filtering of recipes based on user-defined dietary needs.
+*   **Unit Conversion:** Advanced aggregation of grocery list items with unit conversions (e.g., grams to kilograms, teaspoons to tablespoons).
