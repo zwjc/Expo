@@ -127,7 +127,8 @@ export default function SettingsScreen() {
       <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>Settings</Text>
 
       {renderSectionHeader("Account")}
-      {renderSettingItem("Signed in")} /* placeholder for actual user info */ 
+      {renderSettingItem("Signed in")}
+      {/* placeholder for actual user info */}
       {renderSettingItem("Sign Out", handleSignOut)}
 
       {renderSectionHeader("App Preferences")}
